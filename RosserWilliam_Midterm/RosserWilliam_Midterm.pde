@@ -82,7 +82,8 @@ void setup() {
   p5.addButton("Json3").setPosition(150, 260).setSize(50,30).activateBy(ControlP5.RELEASE).setLabel("DATA 3");
   
   p5.addSlider("MasterVolume").setPosition(400,30).setSize(20,225).setRange(0,100).setValue(75).setLabel("Master\nVolume");
-  
+  //EnvVolume
+  p5.addSlider("EnvVolume").setPosition(440,30).setSize(20,225).setRange(0,100).setValue(100).setLabel("Environment\nVolume");
   
   env_glide = new Glide(ac,1.0,25);
   env_gain = new Gain(ac,1,env_glide);
@@ -90,9 +91,15 @@ void setup() {
   env_sounds[0] = getSamplePlayer("gym.wav");
   env_sounds[1] = getSamplePlayer("walk.wav");
   env_sounds[1].pause(true);
+  env_sounds[2] = getSamplePlayer("social.wav");
+  env_sounds[2].pause(true);
+  env_sounds[3] = getSamplePlayer("present.wav");
+  env_sounds[3].pause(true);
   
   env_gain.addInput(env_sounds[0]);
   env_gain.addInput(env_sounds[1]);
+  env_gain.addInput(env_sounds[2]);
+  env_gain.addInput(env_sounds[3]);
   
   master_glide = new Glide(ac,0.75,25);
   master_gain = new Gain(ac,1,master_glide);
@@ -175,6 +182,10 @@ void ToggleHeartbeat() {
 
 void MasterVolume(float vol) {
   master_glide.setValue(vol/100.0);
+}
+
+void EnvVolume(float vol) {
+  env_glide.setValue(vol/100.0);
 }
 
 void Json1() {
