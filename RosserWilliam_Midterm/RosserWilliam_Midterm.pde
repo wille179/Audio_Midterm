@@ -51,8 +51,6 @@ String eventDataJSON2 = "ExampleData_2.json";
 String eventDataJSON3 = "ExampleData_3.json";
 Listener listener;
 NotificationServer server;
-ArrayList<Notification> notifications;
-String lastMessage = "";
 
 void setup() {
   size(700,700);
@@ -201,6 +199,11 @@ void Json1() {
   server.stopEventStream(); //always call this before loading a new stream
   server.loadEventStream(eventDataJSON1);
   println("**** New event stream loaded: " + eventDataJSON1 + " ****");
+  tweetList = new ArrayList<Notification>();
+  emailList = new ArrayList<Notification>();
+  textList = new ArrayList<Notification>();
+  callList = new ArrayList<Notification>();
+  vmList = new ArrayList<Notification>();
 }
 
 void Json2() {
@@ -208,6 +211,11 @@ void Json2() {
   server.stopEventStream(); //always call this before loading a new stream
   server.loadEventStream(eventDataJSON2);
   println("**** New event stream loaded: " + eventDataJSON2 + " ****");
+  tweetList = new ArrayList<Notification>();
+  emailList = new ArrayList<Notification>();
+  textList = new ArrayList<Notification>();
+  callList = new ArrayList<Notification>();
+  vmList = new ArrayList<Notification>();
 }
 
 void Json3() {
@@ -215,4 +223,9 @@ void Json3() {
   server.stopEventStream(); //always call this before loading a new stream
   server.loadEventStream(eventDataJSON3);
   println("**** New event stream loaded: " + eventDataJSON3 + " ****");
+  tweetList = new ArrayList<Notification>();
+  emailList = new ArrayList<Notification>();
+  textList = new ArrayList<Notification>();
+  callList = new ArrayList<Notification>();
+  vmList = new ArrayList<Notification>();
 }
