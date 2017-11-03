@@ -33,6 +33,7 @@ class Listener implements NotificationListener {
         break;
     }
     debugOutput += notification.getSender() + ", " + notification.getMessage();
+    lastMessage = debugOutput;
     
     println(debugOutput);
   }

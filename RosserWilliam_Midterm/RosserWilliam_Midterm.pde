@@ -42,6 +42,7 @@ boolean[][] receive = {{true,true,true,true,true},
                         {false,false,true,true,false},
                         {false,false,false,true,false}};
 boolean heartbeat = true;
+SamplePlayer heartbeatSound;
 Gain master_gain;
 Glide master_glide;
 int jsonNum = 1;
@@ -51,6 +52,7 @@ String eventDataJSON3 = "ExampleData_3.json";
 Listener listener;
 NotificationServer server;
 ArrayList<Notification> notifications;
+String lastMessage = "";
 
 void setup() {
   size(700,700);
@@ -95,15 +97,18 @@ void setup() {
   env_sounds[2].pause(true);
   env_sounds[3] = getSamplePlayer("present.wav");
   env_sounds[3].pause(true);
-  
-  env_gain.addInput(env_sounds[0]);
-  env_gain.addInput(env_sounds[1]);
-  env_gain.addInput(env_sounds[2]);
-  env_gain.addInput(env_sounds[3]);
+  for (int i=0;i<4;i++) {
+    env_gain.addInput(env_sounds[i]);
+    env_sounds[i].setLoopType(SamplePlayer.LoopType.LOOP_FORWARDS);
+  }
   
   master_glide = new Glide(ac,0.75,25);
   master_gain = new Gain(ac,1,master_glide);
   master_gain.addInput(env_gain);
+  heartbeatSound = getSamplePlayer("heartbeat.wav");
+  heartbeatSound.setLoopType(SamplePlayer.LoopType.LOOP_FORWARDS);
+  master_gain.addInput(heartbeatSound);
+  
   ac.out.addInput(master_gain);
   ac.start();
 }
@@ -122,6 +127,8 @@ void draw() {
   text("Heartbeat: " + ((heartbeat)?"Active":"Muted"),590,55);
   
   text("Json loaded: ExampleData_"+jsonNum+".json",30,250);
+  
+  text("Latest Message:\n"+lastMessage,30,320);
 }
 
 void Workout() {
@@ -177,6 +184,7 @@ void ToggleVoice() {
 }
 
 void ToggleHeartbeat() {
+  heartbeatSound.pause(heartbeat);
   heartbeat = !heartbeat;
 }
 
