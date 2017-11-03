@@ -30,7 +30,6 @@ String[] env_context_label = {"Working Out","Walking","Socializing","Presenting"
 SamplePlayer[] env_sounds = new SamplePlayer[4];
 Gain env_gain;
 Glide env_glide;
-float[] env_gain_volume = new float[4];
 int[] interrupt_level = {4,3,2,1};
 int[] social_level = {3,3,2,1};
 
@@ -43,7 +42,8 @@ boolean[][] receive = {{true,true,true,true,true},
                         {false,false,true,true,false},
                         {false,false,false,true,false}};
 boolean heartbeat = true;
-
+Gain master_gain;
+Glide master_glide;
 int jsonNum = 1;
 String eventDataJSON1 = "ExampleData_1.json";
 String eventDataJSON2 = "ExampleData_2.json";
@@ -81,11 +81,24 @@ void setup() {
   p5.addButton("Json2").setPosition(90, 260).setSize(50,30).activateBy(ControlP5.RELEASE).setLabel("DATA 2");
   p5.addButton("Json3").setPosition(150, 260).setSize(50,30).activateBy(ControlP5.RELEASE).setLabel("DATA 3");
   
-  p5.addSlider("MasterVolume").setPosition(400,30).setSize(20,225).setRange(0,100).setValue(75).setLabel("Master Volume");
+  p5.addSlider("MasterVolume").setPosition(400,30).setSize(20,225).setRange(0,100).setValue(75).setLabel("Master\nVolume");
   
+  
+  env_glide = new Glide(ac,1.0,25);
+  env_gain = new Gain(ac,1,env_glide);
   //Setup Env sounds.
-  //Setup env gain.
-  //Setup env gain volumes.
+  env_sounds[0] = getSamplePlayer("gym.wav");
+  env_sounds[1] = getSamplePlayer("walk.wav");
+  env_sounds[1].pause(true);
+  
+  env_gain.addInput(env_sounds[0]);
+  env_gain.addInput(env_sounds[1]);
+  
+  master_glide = new Glide(ac,0.75,25);
+  master_gain = new Gain(ac,1,master_glide);
+  master_gain.addInput(env_gain);
+  ac.out.addInput(master_gain);
+  ac.start();
 }
 
 void draw() {
@@ -161,7 +174,7 @@ void ToggleHeartbeat() {
 }
 
 void MasterVolume(float vol) {
-  
+  master_glide.setValue(vol/100.0);
 }
 
 void Json1() {
