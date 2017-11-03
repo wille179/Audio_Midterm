@@ -29,6 +29,7 @@ int env_context = 0;
 String[] env_context_label = {"Working Out","Walking","Socializing","Presenting"};
 SamplePlayer[] env_sounds = new SamplePlayer[4];
 Gain env_gain;
+Glide env_glide;
 float[] env_gain_volume = new float[4];
 int[] interrupt_level = {4,3,2,1};
 int[] social_level = {3,3,2,1};
@@ -42,10 +43,24 @@ boolean[][] receive = {{true,true,true,true,true},
                         {false,false,true,true,false},
                         {false,false,false,true,false}};
 boolean heartbeat = true;
+
 int jsonNum = 1;
+String eventDataJSON1 = "ExampleData_1.json";
+String eventDataJSON2 = "ExampleData_2.json";
+String eventDataJSON3 = "ExampleData_3.json";
+Listener listener;
+NotificationServer server;
+ArrayList<Notification> notifications;
 
 void setup() {
   size(700,700);
+  
+  server = new NotificationServer();
+  listener = new Listener();
+  server.addListener(listener);
+  
+  server.loadEventStream(eventDataJSON1);
+  
   ac = new AudioContext();
   p5 = new ControlP5(this);
   
@@ -65,6 +80,9 @@ void setup() {
   p5.addButton("Json1").setPosition(30, 260).setSize(50,30).activateBy(ControlP5.RELEASE).setLabel("DATA 1");
   p5.addButton("Json2").setPosition(90, 260).setSize(50,30).activateBy(ControlP5.RELEASE).setLabel("DATA 2");
   p5.addButton("Json3").setPosition(150, 260).setSize(50,30).activateBy(ControlP5.RELEASE).setLabel("DATA 3");
+  
+  p5.addSlider("MasterVolume").setPosition(400,30).setSize(20,225).setRange(0,100).setValue(75).setLabel("Master Volume");
+  
   //Setup Env sounds.
   //Setup env gain.
   //Setup env gain volumes.
@@ -142,14 +160,27 @@ void ToggleHeartbeat() {
   heartbeat = !heartbeat;
 }
 
+void MasterVolume(float vol) {
+  
+}
+
 void Json1() {
   jsonNum = 1;
+  server.stopEventStream(); //always call this before loading a new stream
+  server.loadEventStream(eventDataJSON1);
+  println("**** New event stream loaded: " + eventDataJSON1 + " ****");
 }
 
 void Json2() {
   jsonNum = 2;
+  server.stopEventStream(); //always call this before loading a new stream
+  server.loadEventStream(eventDataJSON2);
+  println("**** New event stream loaded: " + eventDataJSON2 + " ****");
 }
 
 void Json3() {
   jsonNum = 3;
+  server.stopEventStream(); //always call this before loading a new stream
+  server.loadEventStream(eventDataJSON3);
+  println("**** New event stream loaded: " + eventDataJSON3 + " ****");
 }
