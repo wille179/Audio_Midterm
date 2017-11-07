@@ -1,0 +1,31 @@
+William Rosser
+Midterm Homework
+
+I used a relatively simple scheme that selectively sonifies messages from different sources. Each source has a toggleable notification setting that is preserved for that context. For a given context, the default behavior is to recieve:
+
+Context:	Notifications allowed:
+Working out	All Notifications
+Walking		All Notifications
+Socializing	Text Messages, Missed Calls
+Presenting	Missed Calls
+
+Additionally, each context has a defined interrupt level, which determines how easily a person can be distracted from their task, and a social availability level, which measures a person's current social interaction and whether or not text-to-speech is appropriate.
+
+Context:	Interrupt Level:	Social availability Level:
+Working Out		4			3
+Walking			3			3
+Socializing		2			2 (No TTS)
+Presenting		1			1 (No TTS)
+
+If the notification is allowed AND the priority is sufficient to warrent an interruption, the primary sonification is played.
+
+Message:	Primary Sonification	Earcon or Audio Icon
+Tweet		Bird Chirp		Audio Icon
+Email		Woosh			Earcon
+Text		Ding			Earcon
+Missed Call	Phone Ringing		Audio Icon
+Voicemail	Buzz			Earcon (Synthesized)
+
+If the notification is sufficient to have had a primary sonification AND the social level is high enough, it is queued up to have TTS announce who it is from. If multiple passing messages have piled up in one category, it will merely list a count of those messages.
+
+As for the heartbeat, it is in the form of a very low, rhythmic bass rumble. I specifically designed the heartbeat to be as unobtrusive as possible and rhythmic enough that you could forget about it over time.
