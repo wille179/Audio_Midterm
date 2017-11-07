@@ -25,7 +25,7 @@ class Listener implements NotificationListener {
     totalNotifications++;
     String debugOutput = "";
     String voiceOut = "";
-    boolean playVoice = social_level[env_context] != 1 && interrupt_level[env_context]>=notification.getPriorityLevel();;
+    boolean playVoice = social_level[env_context] > 2 && interrupt_level[env_context]>=notification.getPriorityLevel();;
     switch (notification.getType()) {
       //0=Tweet 1=Email 2=TextMessage 3=PhoneCall 4=VoiceMail
       case Tweet:
