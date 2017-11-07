@@ -32,6 +32,11 @@ Gain env_gain;
 Glide env_glide;
 int[] interrupt_level = {4,3,2,1};
 int[] social_level = {3,3,2,1};
+SamplePlayer[] arrive_sounds = new SamplePlayer[4];
+Gain[] arrive_gain = new Gain[4];
+WavePlayer[] vm_arrive = new WavePlayer[10];
+Gain[] vm_arrive_gain = new Gain[11]; //11 = master vm gain (for pausing.)
+int vm_arrive_framecount = 0;
 
 /*
 recieve[context][messageType]:
@@ -43,8 +48,12 @@ boolean[][] receive = {{true,true,true,true,true},
                         {false,false,false,true,false}};
 boolean heartbeat = true;
 SamplePlayer heartbeatSound;
+Gain heartbeatGain;
 Gain master_gain;
 Glide master_glide;
+TextToSpeechMaker ttsMaker;
+SamplePlayer ttsVoice = null;
+
 int jsonNum = 1;
 String eventDataJSON1 = "ExampleData_1.json";
 String eventDataJSON2 = "ExampleData_2.json";
@@ -58,9 +67,8 @@ void setup() {
   server = new NotificationServer();
   listener = new Listener();
   server.addListener(listener);
-  
   server.loadEventStream(eventDataJSON1);
-  
+  ttsMaker = new TextToSpeechMaker();
   ac = new AudioContext();
   p5 = new ControlP5(this);
   
@@ -85,6 +93,9 @@ void setup() {
   //EnvVolume
   p5.addSlider("EnvVolume").setPosition(440,30).setSize(20,225).setRange(0,100).setValue(100).setLabel("Environment\nVolume");
   
+  master_glide = new Glide(ac,0.75,25);
+  master_gain = new Gain(ac,1,master_glide);
+  
   env_glide = new Glide(ac,1.0,25);
   env_gain = new Gain(ac,1,env_glide);
   //Setup Env sounds.
@@ -99,13 +110,50 @@ void setup() {
     env_gain.addInput(env_sounds[i]);
     env_sounds[i].setLoopType(SamplePlayer.LoopType.LOOP_FORWARDS);
   }
+  //0=Tweet 1=Email 2=TextMessage 3=PhoneCall 4=VoiceMail
+  arrive_sounds[0] = getSamplePlayer("tweet.wav");
+  arrive_sounds[0].pause(true);
+  arrive_gain[0] = new Gain(ac,1,0.08);
+  arrive_gain[0].addInput(arrive_sounds[0]);
+  master_gain.addInput(arrive_gain[0]);
   
-  master_glide = new Glide(ac,0.75,25);
-  master_gain = new Gain(ac,1,master_glide);
+  arrive_sounds[1] = getSamplePlayer("email_woosh.wav");
+  arrive_sounds[1].pause(true);
+  arrive_gain[1] = new Gain(ac,1,0.4);
+  arrive_gain[1].addInput(arrive_sounds[1]);
+  master_gain.addInput(arrive_gain[1]);
+  
+  arrive_sounds[2] = getSamplePlayer("text_ding.wav");
+  arrive_gain[2] = new Gain(ac,1,0.4);
+  arrive_gain[2].addInput(arrive_sounds[2]);
+  arrive_sounds[2].pause(true);
+  master_gain.addInput(arrive_gain[2]);
+  
+  arrive_sounds[3] = getSamplePlayer("phone.wav");
+  arrive_sounds[3].pause(true);
+  arrive_gain[3] = new Gain(ac,1,0.15);
+  arrive_gain[3].addInput(arrive_sounds[3]);
+  master_gain.addInput(arrive_gain[3]);
+  
+  int vm_a_freq = 330;
+  vm_arrive_gain[10] = new Gain(ac,1,.02);
+  for (int i = 0; i<10; i++) {
+    vm_arrive[i] = new WavePlayer(ac, vm_a_freq*(i+1),Buffer.SINE);
+    vm_arrive_gain[i] = new Gain(ac,1,1.0/(i+1));
+    vm_arrive_gain[i].addInput(vm_arrive[i]);
+    vm_arrive_gain[10].addInput(vm_arrive_gain[i]);
+  }
+  vm_arrive_gain[10].pause(true);
+  master_gain.addInput(vm_arrive_gain[10]);
+  
+  
+  
   master_gain.addInput(env_gain);
   heartbeatSound = getSamplePlayer("heartbeat.wav");
   heartbeatSound.setLoopType(SamplePlayer.LoopType.LOOP_FORWARDS);
-  master_gain.addInput(heartbeatSound);
+  heartbeatGain = new Gain(ac, 1, 1);
+  heartbeatGain.addInput(heartbeatSound);
+  master_gain.addInput(heartbeatGain);
   
   ac.out.addInput(master_gain);
   ac.start();
@@ -127,6 +175,67 @@ void draw() {
   text("Json loaded: ExampleData_"+jsonNum+".json",30,250);
   
   text("Latest Message:\n"+lastMessage,30,320);
+  if (!vm_arrive_gain[10].isPaused()) {
+    if (vm_arrive_framecount < 20) {
+      vm_arrive_framecount++;
+    } else {
+      vm_arrive_gain[10].pause(true);
+      vm_arrive_framecount = 0;
+    }
+  }
+  //ArrayList<Notification> tweetList = new ArrayList<Notification>();
+  //ArrayList<Notification> emailList = new ArrayList<Notification>();
+  //ArrayList<Notification> textList = new ArrayList<Notification>();
+  //ArrayList<Notification> callList = new ArrayList<Notification>();
+  //ArrayList<Notification> vmList = new ArrayList<Notification>();
+  if (ttsMaker != null && (ttsVoice==null || ttsVoice.isDeleted() || ttsVoice.isPaused())) {
+    String s = "";
+    Notification notification = null;
+   if (callList.size() != 0) {
+      if (callList.size() > 1) {
+        s += callList.size() + " missed calls.";
+        callList.clear();
+      } else {
+        notification = callList.remove(0);
+        s += "Missed Call from " + notification.getSender();;
+      }
+   } else if (tweetList.size() != 0) {
+      if (tweetList.size() > 1) {
+        s += tweetList.size() + " tweets.";
+        tweetList.clear();
+      } else {
+        notification = tweetList.remove(0);
+        s += "Tweet from " + notification.getSender();;
+      }
+    } else if (emailList.size() != 0) {
+      if (emailList.size() > 1) {
+        s += emailList.size() + " emails.";
+        emailList.clear();
+      } else {
+        notification = emailList.remove(0);
+        s += "Email from " + notification.getSender();;
+      }
+    } else if (textList.size() != 0) {
+      if (textList.size() > 1) {
+        s += textList.size() + " texts.";
+        textList.clear();
+      } else {
+        notification = textList.remove(0);
+        s += "Text from " + notification.getSender();;
+      }
+    } else if (vmList.size() != 0) {
+      if (vmList.size() > 1) {
+        s += vmList.size() + " voice mails.";
+        vmList.clear();
+      } else {
+        notification = vmList.remove(0);
+        s += "Voice mail from " + notification.getSender();;
+      }
+    }
+    if (s != "" ) {
+      speech(s);
+    }
+  }
 }
 
 void Workout() {
@@ -135,6 +244,7 @@ void Workout() {
   env_sounds[1].pause(true);
   env_sounds[2].pause(true);
   env_sounds[3].pause(true);
+  heartbeatGain.setGain(1);
 }
 
 void Walking() {
@@ -143,6 +253,7 @@ void Walking() {
   env_sounds[1].pause(false);
   env_sounds[2].pause(true);
   env_sounds[3].pause(true);
+  heartbeatGain.setGain(1);
 }
 
 void Socializing() {
@@ -151,6 +262,7 @@ void Socializing() {
   env_sounds[1].pause(true);
   env_sounds[2].pause(false);
   env_sounds[3].pause(true);
+  heartbeatGain.setGain(0.5);
 }
 
 void Presenting() {
@@ -159,6 +271,7 @@ void Presenting() {
   env_sounds[1].pause(true);
   env_sounds[2].pause(true);
   env_sounds[3].pause(false);
+  heartbeatGain.setGain(0.1);
 }
 
 void ToggleTwitter() {

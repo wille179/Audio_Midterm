@@ -18,7 +18,7 @@ void setup() {
   //which you will then need to hook up to SamplePlayer Beads
   ttsMaker = new TextToSpeechMaker();
   
-  String exampleSpeech = "Text to speech is okay, I guess, I am an idiot.";
+  String exampleSpeech = "Text to speech is okay, I guess, why does this work?";
   
   ttsExamplePlayback(exampleSpeech); //see ttsExamplePlayback below for usage
   
